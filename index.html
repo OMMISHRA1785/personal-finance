@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Personal Finance Dashboard — Modern</title>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ========== AUTH SCREEN ========== -->
+    <div id="authScreen" class="auth-screen">
+      <div class="auth-card glass">
+        <div class="auth-switch">
+          <button id="showLogin" class="auth-btn active">Login</button>
+          <button id="showRegister" class="auth-btn">Register</button>
+        </div>
+
+        <div id="loginForm" class="auth-form">
+          <h2>Welcome back</h2>
+          <input id="loginEmail" type="email" placeholder="Email" required />
+          <input id="loginPassword" type="password" placeholder="Password" required />
+          <div class="row-between">
+            <label><input id="rememberMe" type="checkbox" /> Remember me</label>
+            <button id="doLogin" class="primary">Login</button>
+          </div>
+          <div id="loginError" class="auth-error"></div>
+        </div>
+
+        <div id="registerForm" class="auth-form hidden">
+          <h2>Create account</h2>
+          <input id="regName" placeholder="Full name" required />
+          <input id="regEmail" type="email" placeholder="Email" required />
+          <input id="regPassword" type="password" placeholder="Password (6+ chars)" required />
+          <input id="regConfirm" type="password" placeholder="Confirm password" required />
+          <div class="row-between">
+            <button id="doRegister" class="primary">Register</button>
+          </div>
+          <div id="regError" class="auth-error"></div>
+        </div>
+
+        <small class="muted">This demo stores data locally in your browser only.</small>
+      </div>
+    </div>
+
+    <!-- ========== APP / DASHBOARD ========== -->
+    <header id="topbar" class="topbar hidden">
+      <div class="title">
+        <h1>Finance Studio</h1>
+        <p class="subtitle">Track, visualize & plan</p>
+      </div>
+
+      <div class="controls">
+        <span id="currentUserLabel" class="muted"></span>
+        <button id="logoutBtn" class="light">Logout</button>
+
+        <label class="toggle" title="Dark mode">
+          <input id="darkToggle" type="checkbox" />
+          <span class="switch"></span>
+        </label>
+
+        <div class="month-filter">
+          <select id="monthSelect" title="Filter by month">
+            <option value="all">All months</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main id="mainApp" class="container hidden">
+      <section class="left-col">
+        <!-- Summary Cards -->
+        <div class="summary">
+          <div class="card glass">
+            <div class="card-top">
+              <i class="fa-solid fa-arrow-down-to-line icon-income"></i>
+              <div class="card-head">Income</div>
+            </div>
+            <div class="amount" id="totalIncome">₹0</div>
+            <div class="meta">This month</div>
+          </div>
+
+          <div class="card glass">
+            <div class="card-top">
+              <i class="fa-solid fa-arrow-up-from-line icon-expense"></i>
+              <div class="card-head">Expenses</div>
+            </div>
+            <div class="amount" id="totalExpense">₹0</div>
+            <div class="meta">This month</div>
+          </div>
+
+          <div class="card glass">
+            <div class="card-top">
+              <i class="fa-solid fa-wallet icon-balance"></i>
+              <div class="card-head">Balance</div>
+            </div>
+            <div class="amount" id="balance">₹0</div>
+            <div class="meta">Available</div>
+          </div>
+        </div>
+
+        <!-- Progress Bars -->
+        <div class="progress-wrap glass">
+          <div class="progress-row">
+            <div class="label">Spent % of Income</div>
+            <div class="progress-bar" aria-hidden>
+              <div id="spentProgress" class="progress-fill"></div>
+            </div>
+            <div class="small" id="spentPercent">0%</div>
+          </div>
+
+          <div class="progress-row">
+            <div class="label">Balance Health</div>
+            <div class="progress-bar">
+              <div id="balanceProgress" class="progress-fill"></div>
+            </div>
+            <div class="small" id="balancePercent">0%</div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-card glass">
+          <canvas id="pieChart" height="220"></canvas>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="transactions glass">
+          <div class="trans-head">
+            <h2>Transactions</h2>
+            <div class="filters">
+              <select id="categoryFilter">
+                <option value="all">All categories</option>
+              </select>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="transactions"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="right-col">
+        <div class="add-card glass">
+          <h3>Add transaction</h3>
+
+          <form id="addForm" autocomplete="off">
+            <input id="title" placeholder="Title (Salary, Lunch)" required />
+            <input id="date" type="date" required />
+
+            <select id="category">
+              <option value="Salary">Salary</option>
+              <option value="Food">Food</option>
+              <option value="Travel">Travel</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Bills">Bills</option>
+              <option value="Other">Other</option>
+            </select>
+
+            <input id="amount" type="number" step="0.01" placeholder="Amount (₹)" required />
+
+            <div class="type-row">
+              <label><input type="radio" name="type" value="income" checked /> Income</label>
+              <label><input type="radio" name="type" value="expense" /> Expense</label>
+            </div>
+
+            <button id="addBtn" class="primary">Add transaction</button>
+          </form>
+        </div>
+
+        <div class="hint glass">
+          <h4>Tips</h4>
+          <ul>
+            <li>Use categories for better charts.</li>
+            <li>Toggle dark mode for night viewing.</li>
+            <li>Filter by month to analyze trends.</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <footer id="footer" class="footer hidden">
+      <small>Made with ❤️ — Personal Finance Dashboard</small>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
